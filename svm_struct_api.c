@@ -405,20 +405,20 @@ SVECTOR     *psi(PATTERN x, LABEL y, STRUCTMODEL *sm,
 
   k = y.sequence[0];
   for(i=0;i<69;i++){
-    words[k*69+i].wnum = x.fbanks[0][i];
+    words[k*69+i].weight += x.fbanks[0][i];
   }
 
   for(t=1;t<x.length;t++){
     k = y.sequence[t];
-    trans[y.sequence[t-1]*48+k].wnum += 1.0;
+    trans[y.sequence[t-1]*48+k].weight += 1.0;
     for(i=0;i<69;i++){
-      words[k*69+i].wnum += x.fbanks[t][i];
+      words[k*69+i].weight += x.fbanks[t][i];
     }
   }
 
   sum = 0.0;
   for(i=0;i<sm->sizePsi;i++){
-    sum += words[i].wnum*words[i].wnum;
+    sum += words[i].weight*words[i].weight;
   }
   
   fvec->twonorm_sq = sum;
