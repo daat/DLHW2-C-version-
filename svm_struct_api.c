@@ -98,10 +98,6 @@ SAMPLE      read_struct_examples(char *file, STRUCT_LEARN_PARM *sparm)
     }
     //printf("%d\n", strcmp(prev, fid));
     if(strcmp(prev, fid) != 0){
-      //printf("%s %s\n", prev, fid);
-      strncpy(prev, fid, strlen(fid));
-      prev[strlen(fid)] = '\0';
-
       if(n_frames > 0){
         fbanks = (double **)realloc(fbanks, sizeof(double *)*n_frames);
         sequence = (int *)realloc(sequence, sizeof(int)*n_frames);
@@ -111,6 +107,12 @@ SAMPLE      read_struct_examples(char *file, STRUCT_LEARN_PARM *sparm)
         y = (LABEL *)malloc(sizeof(LABEL));
         y->sequence = sequence;
         y->length = n_frames;
+        x->id = (char *)malloc(sizeof(char)*(strlen(prev)+1));
+        memcpy(x->id, prev, sizeof(char)*strlen(prev));
+        x->id[strlen(prev)] = '\0';
+        y->id = (char *)malloc(sizeof(char)*(strlen(prev)+1));
+        memcpy(y->id, prev, sizeof(char)*strlen(prev));
+        y->id[strlen(prev)] = '\0';
         examples[n_examples].x = *x;
         examples[n_examples].y = *y;
         n_frames = 0;
@@ -119,6 +121,8 @@ SAMPLE      read_struct_examples(char *file, STRUCT_LEARN_PARM *sparm)
         sequence = (int *)my_malloc(sizeof(int)*frames_len);
         n_examples++;
       }
+      strncpy(prev, fid, strlen(fid));
+      prev[strlen(fid)] = '\0';
     }
 
     if(n_frames >= frames_len){
@@ -142,6 +146,12 @@ SAMPLE      read_struct_examples(char *file, STRUCT_LEARN_PARM *sparm)
     y = (LABEL *)malloc(sizeof(LABEL));
     y->sequence = sequence;
     y->length = n_frames;
+    x->id = (char *)malloc(sizeof(char)*(strlen(prev)+1));
+    memcpy(x->id, prev, sizeof(char)*strlen(prev));
+    x->id[strlen(prev)] = '\0';
+    y->id = (char *)malloc(sizeof(char)*(strlen(prev)+1));
+    memcpy(y->id, prev, sizeof(char)*strlen(prev));
+    y->id[strlen(prev)] = '\0';
     examples[n_examples].x = *x;
     examples[n_examples].y = *y;
     n_examples++;
@@ -224,6 +234,7 @@ LABEL       classify_struct_example(PATTERN x, STRUCTMODEL *sm,
   LABEL y;
   y.length = x.length;
   y.sequence = (int *)malloc(sizeof(int)*x.length);
+  y.id = x.id;
 
   double a[48], na[48];
   double sum, max_v, v;
@@ -501,17 +512,64 @@ void        write_struct_model(char *file, STRUCTMODEL *sm,
 			       STRUCT_LEARN_PARM *sparm)
 {
   /* Writes structural model sm to file file. */
+  FILE *fp = fopen(file, "wb");
+
+  fwrite(&(sm->sizePsi), sizeof(long), 1, fp);
+  fwrite(sm->w, sizeof(double), sizeof(sm->w), fp);
+  // fwrite(&(sm->walpha), sizeof(double), 1, fp);
+
+  // MODEL *m = sm->svm_model;
+  // fwrite(&(m->sv_num), sizeof(long), 1, fp);
+  // fwrite(&(m->at_upper_bound), sizeof(long), 1, fp);
+  // fwrite(&(m->totwords), sizeof(long), 1, fp);
+  // fwrite(&(m->totdoc), sizeof(long), 1, fp);
+  // fwrite(&(m->b), sizeof(double), 1, fp);
+  // fwrite(&(m->loo_error), sizeof(double), 1, fp);
+  // fwrite(&(m->loo_recall), sizeof(double), 1, fp);
+  // fwrite(&(m->loo_precision), sizeof(double), 1, fp);
+  // fwrite(&(m->xa_error), sizeof(double), 1, fp);
+  // fwrite(&(m->xa_recall), sizeof(double), 1, fp);
+  // fwrite(&(m->xa_precision), sizeof(double), 1, fp);
+  // fwrite(&(m->maxdiff), sizeof(double), 1, fp);
+  // fwrite(m->index, sizeof(long), sizeof(m->index), fp);
+  // fwrite(m->alpha, sizeof(double), sizeof(m->alpha), fp);
+  // fwrite(m->lin_weights, sizeof(double), sizeof(m->lin_weights), fp);
+
+  // KERNEL_PARM kp= m->kernel_parm;
+  // fwrite(&(kp.kernel_type), sizeof(long), 1, fp);
+  // fwrite(&(kp.poly_degree), sizeof(long), 1, fp);
+  // fwrite(&(kp.rbf_gamma), sizeof(double), 1, fp);
+  // fwrite(&(kp.coef_lin), sizeof(double), 1, fp);
+  // fwrite(&(kp.coef_const), sizeof(double), 1, fp);
+  // fwrite(kp.custom, sizeof(char), 50, fp);
+
+  // MATRIX *mat = kp.gram_matrix;
+  fclose(fp);
+
 }
 
 STRUCTMODEL read_struct_model(char *file, STRUCT_LEARN_PARM *sparm)
 {
   /* Reads structural model sm from file file. This function is used
      only in the prediction module, not in the learning module. */
+
+  STRUCTMODEL sm;
+  FILE *fp = fopen(file, "rb");
+
+  fread(&(sm.sizePsi), sizeof(long), 1, fp);
+  fread(sm.w, sizeof(double), sizeof(sm.sizePsi)+1, fp);
+  fclose(fp);
 }
 
 void        write_label(FILE *fp, LABEL y)
 {
   /* Writes label y to file handle fp. */
+  fputs(y.id, fp);
+  int i;
+  for(i=0;i<y.length;i++){
+    fprintf(fp, " %d", y.sequence[i]);
+  }
+  fputs("\n", fp);
 } 
 
 void        free_pattern(PATTERN x) {

@@ -58,6 +58,7 @@ typedef struct pattern {
      for storing a natural language sentence in NLP parsing */
   double **fbanks;
   int length;
+  char *id;
 } PATTERN;
 
 typedef struct label {
@@ -65,6 +66,7 @@ typedef struct label {
      e.g. the parse tree of the corresponding sentence. */
   int *sequence;
   int length;
+  char *id;
 } LABEL;
 
 typedef struct structmodel {
@@ -74,7 +76,7 @@ typedef struct structmodel {
   double walpha;
   /* other information that is needed for the stuctural model can be
      added here, e.g. the grammar rules for NLP parsing */
-  int add_your_variables_here;
+  //int add_your_variables_here;
 } STRUCTMODEL;
 
 typedef struct struct_learn_parm {
