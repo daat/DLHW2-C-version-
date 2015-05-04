@@ -515,35 +515,8 @@ void        write_struct_model(char *file, STRUCTMODEL *sm,
   FILE *fp = fopen(file, "wb");
 
   fwrite(&(sm->sizePsi), sizeof(long), 1, fp);
-  fwrite(sm->w, sizeof(double), sizeof(sm->w), fp);
-  // fwrite(&(sm->walpha), sizeof(double), 1, fp);
-
-  // MODEL *m = sm->svm_model;
-  // fwrite(&(m->sv_num), sizeof(long), 1, fp);
-  // fwrite(&(m->at_upper_bound), sizeof(long), 1, fp);
-  // fwrite(&(m->totwords), sizeof(long), 1, fp);
-  // fwrite(&(m->totdoc), sizeof(long), 1, fp);
-  // fwrite(&(m->b), sizeof(double), 1, fp);
-  // fwrite(&(m->loo_error), sizeof(double), 1, fp);
-  // fwrite(&(m->loo_recall), sizeof(double), 1, fp);
-  // fwrite(&(m->loo_precision), sizeof(double), 1, fp);
-  // fwrite(&(m->xa_error), sizeof(double), 1, fp);
-  // fwrite(&(m->xa_recall), sizeof(double), 1, fp);
-  // fwrite(&(m->xa_precision), sizeof(double), 1, fp);
-  // fwrite(&(m->maxdiff), sizeof(double), 1, fp);
-  // fwrite(m->index, sizeof(long), sizeof(m->index), fp);
-  // fwrite(m->alpha, sizeof(double), sizeof(m->alpha), fp);
-  // fwrite(m->lin_weights, sizeof(double), sizeof(m->lin_weights), fp);
-
-  // KERNEL_PARM kp= m->kernel_parm;
-  // fwrite(&(kp.kernel_type), sizeof(long), 1, fp);
-  // fwrite(&(kp.poly_degree), sizeof(long), 1, fp);
-  // fwrite(&(kp.rbf_gamma), sizeof(double), 1, fp);
-  // fwrite(&(kp.coef_lin), sizeof(double), 1, fp);
-  // fwrite(&(kp.coef_const), sizeof(double), 1, fp);
-  // fwrite(kp.custom, sizeof(char), 50, fp);
-
-  // MATRIX *mat = kp.gram_matrix;
+  fwrite(sm->w, sizeof(double), sm->sizePsi+1, fp);
+ 
   fclose(fp);
 
 }
@@ -554,11 +527,15 @@ STRUCTMODEL read_struct_model(char *file, STRUCT_LEARN_PARM *sparm)
      only in the prediction module, not in the learning module. */
 
   STRUCTMODEL sm;
+  sm.svm_model = NULL;
   FILE *fp = fopen(file, "rb");
 
   fread(&(sm.sizePsi), sizeof(long), 1, fp);
-  fread(sm.w, sizeof(double), sizeof(sm.sizePsi)+1, fp);
+  
+  sm.w = (double *)malloc(sizeof(double)*(sm.sizePsi+1));
+  fread(sm.w, sizeof(double), sm.sizePsi+1, fp);
   fclose(fp);
+  return sm;
 }
 
 void        write_label(FILE *fp, LABEL y)
