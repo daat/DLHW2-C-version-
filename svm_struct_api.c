@@ -287,7 +287,6 @@ LABEL       classify_struct_example(PATTERN x, STRUCTMODEL *sm,
   }
   
   /*********************/
-  count++;
   return(y);
 }
 
@@ -349,7 +348,7 @@ LABEL       find_most_violated_constraint_marginrescaling(PATTERN x, LABEL y,
      Psi(x,ybar)>Psi(x,y)-1. If the function cannot find a label, it
      shall return an empty label as recognized by the function
      empty_label(y). */
-  LABEL ybar = classify_struct_example(x, sm, sparm);
+  LABEL ybar;
   // int i;
   // for(i=0;i<ybar.length;i++){
   //   printf(" %d", ybar.sequence[i]);
@@ -358,8 +357,64 @@ LABEL       find_most_violated_constraint_marginrescaling(PATTERN x, LABEL y,
   
   /* insert your code for computing the label ybar here */
 
-  return(ybar);
+  ybar.length = x.length;
+  ybar.sequence = (int *)malloc(sizeof(int)*x.length);
+  ybar.id = x.id;
 
+  double a[48], na[48];
+  double sum, max_v, v;
+  int labels[x.length-1][48];
+  int i, j, t, max_j;
+  double unit_loss = 1.0/x.length;
+  
+  for(i=0;i<48;i++){
+    sum = (i == y.sequence[0])? 0.0: unit_loss;
+    for(j=0;j<69;j++){
+      sum += x.fbanks[0][j]*sm->w[i*69+j+1];
+    }
+    a[i] = sum;
+  }
+  
+  for(t=1;t<x.length;t++){
+    for(i=0;i<48;i++){
+      max_j = -1;
+      max_v = -1;
+      for(j=0;j<48;j++){
+        v = a[j] + sm->w[48*69+j*48+i+1];
+        if(max_j < 0 || v > max_v){
+          max_v = v;
+          max_j = j;
+        }
+      }
+      sum = (i == y.sequence[t])? 0.0: unit_loss;
+      for(j=0;j<69;j++){
+        sum += x.fbanks[t][j]*sm->w[i*69+j+1];
+      }
+
+      na[i] = max_v + sum;
+      labels[t-1][i] = max_j;
+    }
+
+    for(i=0;i<48;i++){
+      a[i] = na[i];
+    }
+  }
+
+  max_j = 0;
+  max_v = a[0];
+  for(j=1;j<48;j++){
+    if(a[j] > max_v){
+      max_j = j;
+      max_v = a[j];
+    }
+  }
+  ybar.sequence[ybar.length-1] = max_j;
+  for(t=ybar.length-2;t>=0;t--){
+    ybar.sequence[t] = labels[t][ybar.sequence[t+1]];
+  }
+  
+  /*********************/
+  return(ybar);
 }
 
 int         empty_label(LABEL y)
