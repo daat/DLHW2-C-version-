@@ -607,6 +607,10 @@ void svm_learn_struct_joint(SAMPLE sample, STRUCT_LEARN_PARM *sparm,
   /*****************/
   do { /* iteratively find and add constraints to working set */
 
+      if(numIt>300){
+         break;
+      }
+
       if(struct_verbosity>=1) { 
 	printf("Iter %i: ",++numIt); 
 	fflush(stdout);
