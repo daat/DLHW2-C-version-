@@ -21,6 +21,7 @@
 #include <string.h>
 #include "svm_struct/svm_struct_common.h"
 #include "svm_struct_api.h"
+#define FBANK_LEN 117
 int count = 0;
 
 void        svm_struct_learn_api_init(int argc, char* argv[])
@@ -91,8 +92,8 @@ SAMPLE      read_struct_examples(char *file, STRUCT_LEARN_PARM *sparm)
     *c = '\0';
     label = strtok(NULL, " ");
     int_label = atoi(label);
-    fbank = (double *)my_malloc(sizeof(double)*69);
-    for(i=0; i<69; i++){
+    fbank = (double *)my_malloc(sizeof(double)*FBANK_LEN);
+    for(i=0; i<FBANK_LEN; i++){
       feature = strtok(NULL, " ");
       fbank[i] = atof(feature);
     }
@@ -177,7 +178,7 @@ void        init_struct_model(SAMPLE sample, STRUCTMODEL *sm,
      weights that can be learned. Later, the weight vector w will
      contain the learned weights for the model. */
 
-  sm->sizePsi=69*48+48*48; /* replace by appropriate number of features */
+  sm->sizePsi=FBANK_LEN*48+48*48; /* replace by appropriate number of features */
 }
 
 CONSTSET    init_struct_constraints(SAMPLE sample, STRUCTMODEL *sm, 
@@ -243,8 +244,8 @@ LABEL       classify_struct_example(PATTERN x, STRUCTMODEL *sm,
   
   for(i=0;i<48;i++){
     sum = 0.0;
-    for(j=0;j<69;j++){
-      sum += x.fbanks[0][j]*sm->w[i*69+j+1];
+    for(j=0;j<FBANK_LEN;j++){
+      sum += x.fbanks[0][j]*sm->w[i*FBANK_LEN+j+1];
     }
     a[i] = sum;
   }
@@ -254,15 +255,15 @@ LABEL       classify_struct_example(PATTERN x, STRUCTMODEL *sm,
       max_j = -1;
       max_v = -1;
       for(j=0;j<48;j++){
-        v = a[j] + sm->w[48*69+j*48+i+1];
+        v = a[j] + sm->w[48*FBANK_LEN+j*48+i+1];
         if(max_j < 0 || v > max_v){
           max_v = v;
           max_j = j;
         }
       }
       sum = 0;
-      for(j=0;j<69;j++){
-        sum += x.fbanks[t][j]*sm->w[i*69+j+1];
+      for(j=0;j<FBANK_LEN;j++){
+        sum += x.fbanks[t][j]*sm->w[i*FBANK_LEN+j+1];
       }
       na[i] = max_v + sum;
       labels[t-1][i] = max_j;
@@ -369,8 +370,8 @@ LABEL       find_most_violated_constraint_marginrescaling(PATTERN x, LABEL y,
   
   for(i=0;i<48;i++){
     sum = (i == y.sequence[0])? 0.0: unit_loss;
-    for(j=0;j<69;j++){
-      sum += x.fbanks[0][j]*sm->w[i*69+j+1];
+    for(j=0;j<FBANK_LEN;j++){
+      sum += x.fbanks[0][j]*sm->w[i*FBANK_LEN+j+1];
     }
     a[i] = sum;
   }
@@ -380,15 +381,15 @@ LABEL       find_most_violated_constraint_marginrescaling(PATTERN x, LABEL y,
       max_j = -1;
       max_v = -1;
       for(j=0;j<48;j++){
-        v = a[j] + sm->w[48*69+j*48+i+1];
+        v = a[j] + sm->w[48*FBANK_LEN+j*48+i+1];
         if(max_j < 0 || v > max_v){
           max_v = v;
           max_j = j;
         }
       }
       sum = (i == y.sequence[t])? 0.0: unit_loss;
-      for(j=0;j<69;j++){
-        sum += x.fbanks[t][j]*sm->w[i*69+j+1];
+      for(j=0;j<FBANK_LEN;j++){
+        sum += x.fbanks[t][j]*sm->w[i*FBANK_LEN+j+1];
       }
 
       na[i] = max_v + sum;
@@ -454,7 +455,7 @@ SVECTOR     *psi(PATTERN x, LABEL y, STRUCTMODEL *sm,
   int t, i, k;
   double sum;
   WORD *words = (WORD *)malloc(sizeof(WORD)*(sm->sizePsi+1));
-  WORD *trans = &(words[69*48]);
+  WORD *trans = &(words[FBANK_LEN*48]);
   fvec->userdefined = NULL;
   fvec->kernel_id = 0;
   fvec->next = NULL;
@@ -470,15 +471,15 @@ SVECTOR     *psi(PATTERN x, LABEL y, STRUCTMODEL *sm,
   words[sm->sizePsi].weight = 0.0;
 
   k = y.sequence[0];
-  for(i=0;i<69;i++){
-    words[k*69+i].weight += x.fbanks[0][i];
+  for(i=0;i<FBANK_LEN;i++){
+    words[k*FBANK_LEN+i].weight += x.fbanks[0][i];
   }
 
   for(t=1;t<x.length;t++){
     k = y.sequence[t];
     trans[y.sequence[t-1]*48+k].weight += 1.0;
-    for(i=0;i<69;i++){
-      words[k*69+i].weight += x.fbanks[t][i];
+    for(i=0;i<FBANK_LEN;i++){
+      words[k*FBANK_LEN+i].weight += x.fbanks[t][i];
     }
   }
 

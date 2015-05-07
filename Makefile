@@ -57,12 +57,28 @@ svm_struct_learn_custom.o: svm_struct_learn_custom.c svm_struct_api.h svm_light/
 
 	
 run: output_men output_women
-	python merge_testdata&trimming.py
-output_men: menmodel
+	python merge_testdata_trimming.py
+
+train_men:
+	wget 
+	mv train_men
+	
+test_men:
+	wget http://0rz.tw/pfxOk
+	mv pfxOk test_men
+	
+test_women:
+	wget http://0rz.tw/w2xr9
+	mv w2xr9 test_women
+train_women:
+	wget http://0rz.tw/zIaJu
+	mv zIaJu train_women
+	
+output_men: menmodel test_men
 	./svm_empty_classify ../test_men menmodel output_men
-menmodel: 
+menmodel: train_men
 	./svm_empty_learn -c 1 ../train_men menmodel
-output_women: womenmodel
+output_women: womenmodel test_women
 	./svm_empty_classify ../test_women womenmodel output_women
-womenmodel: 
+womenmodel: train_women
 	./svm_empty_learn -c 1 ../train_women womenmodel

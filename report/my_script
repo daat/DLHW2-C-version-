@@ -1,3 +1,0 @@
-python create_testdata.py
-python create_traindata.py
-python seperate_data_sex.py
