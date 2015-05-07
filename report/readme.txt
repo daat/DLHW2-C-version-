@@ -1,0 +1,2 @@
+假設predict輸出為output_men和output_women
+執行./python merge_testdata&trimming.py就可得到可直接上傳的output.kaggle
