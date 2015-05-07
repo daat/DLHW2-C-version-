@@ -60,25 +60,26 @@ run: output_men output_women
 	python merge_testdata_trimming.py
 
 train_men:
-	wget 
-	mv train_men
+	wget https://goo.gl/KNiVTU
+	mv KNiVTU train_men
 	
 test_men:
-	wget http://0rz.tw/pfxOk
-	mv pfxOk test_men
+	wget https://goo.gl/z5jVQT
+	mv z5jVQT test_men
 	
 test_women:
-	wget http://0rz.tw/w2xr9
-	mv w2xr9 test_women
+	wget https://goo.gl/dhyUPW 
+	mv dhyUPW  test_women
+
 train_women:
-	wget http://0rz.tw/zIaJu
-	mv zIaJu train_women
+	wget https://goo.gl/kjzQ5u
+	mv kjzQ5u train_women
 	
 output_men: menmodel test_men
-	./svm_empty_classify ../test_men menmodel output_men
+	./svm_empty_classify ./test_men menmodel output_men
 menmodel: train_men
-	./svm_empty_learn -c 1 ../train_men menmodel
+	./svm_empty_learn -c 1 ./train_men menmodel
 output_women: womenmodel test_women
-	./svm_empty_classify ../test_women womenmodel output_women
+	./svm_empty_classify ./test_women womenmodel output_women
 womenmodel: train_women
-	./svm_empty_learn -c 1 ../train_women womenmodel
+	./svm_empty_learn -c 1 ./train_women womenmodel
